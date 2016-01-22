@@ -1,6 +1,7 @@
 package com.habibokanla.connectivitydebouncer.app;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
 
 import com.habibokanla.connectivitydebouncer.receiver.NetworkConnectivityPayloadInfo;
 import com.habibokanla.connectivitydebouncer.tracker.ConnectivityTracker;
@@ -24,16 +25,20 @@ import rx.subjects.Subject;
 @dagger.Module
 public class DebouncerAppModule {
 
-    private static final int CONFIGURABLE_DEBOUNCE_DELAY = 20;
+    private static final int CONFIGURABLE_DEBOUNCE_DELAY = 10;
     private ConnectivityDebouncerApp app;
 
     private Subject<NetworkConnectivityPayloadInfo, NetworkConnectivityPayloadInfo> connectivityStream;
     private Observable<NetworkConnectivityPayloadInfo> debouncedStream;
+    private Subject<NetworkConnectivityPayloadInfo, NetworkConnectivityPayloadInfo> userRefreshStream;
 
     public DebouncerAppModule(ConnectivityDebouncerApp app) {
         this.app = app;
         connectivityStream = new SerializedSubject<>(PublishSubject.create());
-        debouncedStream = connectivityStream.share().debounce(CONFIGURABLE_DEBOUNCE_DELAY, TimeUnit.SECONDS);
+        userRefreshStream = new SerializedSubject<>(PublishSubject.create());
+        debouncedStream = connectivityStream.share()
+                .debounce(CONFIGURABLE_DEBOUNCE_DELAY, TimeUnit.SECONDS)
+                .mergeWith(userRefreshStream);
     }
 
     @Provides
@@ -60,6 +65,19 @@ public class DebouncerAppModule {
     @Named("debouncedStream")
     Observable<NetworkConnectivityPayloadInfo> provideDebouncedConnectivityStream() {
         return debouncedStream;
+    }
+
+    @Provides
+    @Singleton
+    @Named("userRefreshStream")
+    Subject<NetworkConnectivityPayloadInfo, NetworkConnectivityPayloadInfo> provideUserRefreshStream() {
+        return userRefreshStream;
+    }
+
+    @Provides
+    @Singleton
+    ConnectivityManager provideConnectivityManager(Context context) {
+        return (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
     }
 
     @Provides

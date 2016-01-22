@@ -25,6 +25,8 @@ public class ConnectivityReceiver extends BroadcastReceiver {
     @Inject
     @Named("connectivityStream")
     Subject<NetworkConnectivityPayloadInfo, NetworkConnectivityPayloadInfo> connectivityStream;
+    @Inject
+    ConnectivityManager connectivityManager;
 
     private static final String TAG = "ConnectivityManager";
     //A subject is essentially similar to a bus, with information traveling up and down,
@@ -37,7 +39,6 @@ public class ConnectivityReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         Log.d(TAG, "Network connectivity change");
         if (intent.getExtras() != null) {
-            final ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
             final NetworkInfo ni = connectivityManager.getActiveNetworkInfo();
 
             //Build a Network Connectivity info payload.

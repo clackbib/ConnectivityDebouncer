@@ -1,19 +1,18 @@
 package com.habibokanla.connectivitydebouncer;
 
+import com.habibokanla.connectivitydebouncer.app.ConnectivityDebouncerApp;
+import com.habibokanla.connectivitydebouncer.tracker.ConnectivityChangeEvent;
+import com.habibokanla.connectivitydebouncer.tracker.ConnectivityTracker;
+import com.squareup.otto.Bus;
+import com.squareup.otto.Subscribe;
+
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-
-import com.habibokanla.connectivitydebouncer.app.ConnectivityDebouncerApp;
-import com.habibokanla.connectivitydebouncer.tracker.ConnectivityChangeEvent;
-import com.squareup.otto.Bus;
-import com.squareup.otto.Subscribe;
 
 import javax.inject.Inject;
 
@@ -21,6 +20,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Inject
     Bus bus;
+    @Inject
+    ConnectivityTracker connectivityTracker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +53,11 @@ public class MainActivity extends AppCompatActivity {
 
         snackbar.getView().setBackgroundColor(
                 ContextCompat.getColor(this, event.info.isConnected ? android.R.color.holo_green_dark : android.R.color.holo_red_light));
+        if (!event.info.isConnected) {
+            snackbar.setActionTextColor(ContextCompat.getColor(this, android.R.color.white)).setAction("RECONNECT", v -> {
+                connectivityTracker.requestSynchronousConnectivityUpdate();
+            });
+        }
         snackbar.show();
     }
 

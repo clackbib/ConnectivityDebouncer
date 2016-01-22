@@ -9,6 +9,7 @@ import android.support.annotation.NonNull;
 public class NetworkConnectivityPayloadInfo implements Comparable<NetworkConnectivityPayloadInfo> {
     public boolean isConnected;
     public String networkType;
+    public boolean explicitRequest;
 
     public NetworkConnectivityPayloadInfo() {
         this.networkType = "undetected";
